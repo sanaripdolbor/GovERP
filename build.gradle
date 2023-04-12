@@ -1,0 +1,110 @@
+import com.axelor.gradle.tasks.GenerateAosChangelog
+import com.axelor.gradle.tasks.CheckEOLCharsInCsv
+
+buildscript {
+  ext.repos = {
+    mavenCentral() {
+      content {
+        excludeGroup 'com.axelor'
+      }
+    }
+    maven {
+      url 'https://plugins.gradle.org/m2/'
+      content {
+        excludeGroup 'com.axelor'
+      }
+    }
+    maven { url 'https://repository.axelor.com/nexus/public/' }
+  }
+  ext.openPlatformVersion = '5.4.19'
+  ext.appVersion = '6.5.4'
+  repositories repos
+  dependencies {
+    classpath "com.axelor:axelor-gradle:${openPlatformVersion}"
+  }
+}
+
+allprojects { repositories repos }
+
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: "com.axelor.app"
+
+apply from: './gradle/style.gradle'
+
+allprojects {
+
+  configurations {
+    runtimeClasspath.exclude group: "org.eclipse.birt.runtime.3_7_1", module: "org.apache.commons.codec"
+  }
+
+  apply plugin: 'idea'
+  apply plugin: 'eclipse'
+
+  group = "com.axelor"
+  version = "${appVersion}"
+
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+
+}
+
+subprojects {
+  group = "com.axelor.apps"
+}
+
+axelor {
+  title "Axelor ERP"
+  description "Axelor Entreprise Application"
+}
+
+dependencies {
+  gradle.appModules.each { dir ->
+    implementation project(":modules:$dir.name")
+  }
+}
+
+task("dataImport", type: JavaExec) {
+  main = "com.axelor.apps.erp.Main"
+  classpath = sourceSets.main.runtimeClasspath
+  if (System.getProperty("exec.args") != null) {
+    args System.getProperty("exec.args").split()
+  }
+}
+
+task archiveReports(type: Zip) {
+  file("modules").traverse(type: groovy.io.FileType.DIRECTORIES, maxDepth: 1) { dir ->
+    if (new File(dir, "build.gradle").exists() && new File(dir, "/src/main/resources/reports").exists()) {
+      new File(dir, "/src/main/resources/reports/").listFiles().each { report ->
+        from report.getPath()
+      }
+    }
+  }
+
+  classifier 'reports'
+  includeEmptyDirs = false
+  destinationDirectory = file("$buildDir/libs")
+}
+
+
+task generateChangeLog(type: GenerateAosChangelog) {
+  group "Axelor application"
+  description "Generate change logs from unreleased entries."
+  files = fileTree(projectDir) {
+    include '**/changelogs/**/*.yml'
+    include '**/changelogs/**/*.yaml'
+  }
+}
+
+task checkCsvEOL(type: CheckEOLCharsInCsv) {
+  group "Axelor application"
+  description "Generate change logs from unreleased entries."
+  files = fileTree(projectDir) {
+    exclude '**/build'
+    exclude '**/bin'
+    exclude '**/out'
+    include '**/*.csv'
+  }
+}
+
+build.finalizedBy archiveReports

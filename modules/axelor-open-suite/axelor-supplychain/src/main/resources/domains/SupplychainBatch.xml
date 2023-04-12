@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain-models xmlns="http://axelor.com/xml/ns/domain-models"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.4.xsd">
+
+  <module name="supplychain" package="com.axelor.apps.supplychain.db"/>
+
+  <entity name="SupplychainBatch" lang="java">
+
+    <!-- HEADER -->
+    <string name="code" title="Code" namecolumn="true" unique="true"/>
+    <integer name="actionSelect" title="Action" required="true"
+      selection="supplychain.batch.action.select" default="1"/>
+    <many-to-one name="company" ref="com.axelor.apps.base.db.Company" required="true"
+      title="Company"/>
+
+    <!-- OTHER INFORMATION -->
+    <string name="description" title="Description" large="true"/>
+    <one-to-many name="batchList" ref="com.axelor.apps.base.db.Batch"
+      mappedBy="supplychainBatch" title="Batches"/>
+
+    <!-- INVOICE ORDERS CONFIGURATION -->
+    <integer name="invoiceOrdersTypeSelect"
+      selection="supplychain.supplychain.batch.invoice.orders.type.select"
+      title="Invoice orders batch type" default="1"/>
+    <many-to-many name="salespersonOrBuyerSet" ref="com.axelor.auth.db.User"/>
+    <many-to-one name="team" ref="com.axelor.team.db.Team"/>
+    <date name="orderUpToDate"/>
+    <string name="deliveryOrReceiptState"/>
+    <string name="statusSelect" title="Status" default="3"/>
+
+    <many-to-one name="period" ref="com.axelor.apps.base.db.Period" title="Period"/>
+    <many-to-many name="productCategorySet" title="Product Categories"
+      ref="com.axelor.apps.base.db.ProductCategory"
+      help="A list of all product categories for which to run the batch (children categories are automatically included). All products will be processed if this list is left empty (note that the batch may take a long time to run if you have a lot of products)."/>
+
+    <extra-code><![CDATA[
+
+	   	// ACTION TYPE
+		public static final int ACTION_INVOICE_OUTGOING_STOCK_MOVES = 2;
+		public static final int ACTION_INVOICE_ORDERS = 3;
+		public static final int ACTION_UPDATE_STOCK_HISTORY = 4;
+
+		public static final String CODE_BATCH_BILL_SUB = "S_B_SUB";
+
+		// INVOICE ORDERS TYPE
+		public static final int INVOICE_ORDERS_TYPE_SALE = 1;
+		public static final int INVOICE_ORDERS_TYPE_PURCHASE = 2;
+
+		// STATUS SELECT
+		public static final int STATUS_NEW = 1;
+		public static final int STATUS_DAYBOOK = 2;
+		public static final int STATUS_ACCOUNTED = 3;
+		public static final int STATUS_CANCELED = 4;
+		public static final int STATUS_SIMULATED = 5;
+
+	]]></extra-code>
+
+  </entity>
+
+</domain-models>

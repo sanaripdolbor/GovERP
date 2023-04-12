@@ -1,0 +1,21 @@
+apply plugin: "com.axelor.app-module"
+
+apply from: "../libs.gradle"
+apply from: "../version.gradle"
+
+apply {
+	version = openSuiteVersion
+}
+
+axelor {
+	title "Axelor Human Resource"
+	description "Axelor Human Resource Module"
+}
+
+dependencies {
+	api project(":modules:axelor-project")
+	api project(":modules:axelor-bank-payment")
+
+	implementation libs.commons_lang3
+	implementation libs.commons_collections4
+}

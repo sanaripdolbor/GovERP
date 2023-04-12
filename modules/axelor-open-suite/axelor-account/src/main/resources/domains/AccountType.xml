@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain-models xmlns="http://axelor.com/xml/ns/domain-models"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.4.xsd">
+
+  <module name="account" package="com.axelor.apps.account.db"/>
+
+  <entity name="AccountType" lang="java" cacheable="true">
+
+    <!-- TODO - REPLACE PER INTEGER ... -->
+    <string name="technicalTypeSelect" title="Technical type" required="true"
+      selection="account.account.technical.type.select"/>
+    <string name="name" title="Name" required="true"/>
+    <boolean name="isManageSubsidiaryAccount" title="Manage subsidiary account"
+      help="This option allows you, by account type, to activate the management of subsidiary accounts on export journal entry."/>
+
+    <extra-code><![CDATA[
+
+	   	// TYPE SELECT
+		public static final String TYPE_ASSET = "asset";
+		public static final String TYPE_CASH = "cash";
+		public static final String TYPE_CHARGE = "charge";
+		public static final String TYPE_COMMITMENT = "commitment";
+		public static final String TYPE_CURRENT_ASSET = "currentAsset";
+		public static final String TYPE_DEBT = "debt";
+		public static final String TYPE_EQUITY = "equity";
+		public static final String TYPE_IMMOBILISATION = "immobilisation";
+		public static final String TYPE_INCOME = "income";
+		public static final String TYPE_PAYABLE = "payable";
+		public static final String TYPE_PROVISION = "provision";
+		public static final String TYPE_RECEIVABLE = "receivable";
+		public static final String TYPE_SPECIAL = "special";
+		public static final String TYPE_TAX = "tax";
+		public static final String TYPE_VIEW = "view";
+
+	]]></extra-code>
+
+  </entity>
+
+</domain-models>

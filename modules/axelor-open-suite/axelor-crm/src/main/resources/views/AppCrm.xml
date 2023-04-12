@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.4.xsd">
+
+  <form name="app-crm-config-form" title="App Crm" model="com.axelor.apps.base.db.AppCrm"
+    canDelete="false" canNew="false" width="large">
+    <panel name="mainPanel">
+      <field name="assignableUsers"/>
+      <field name="groupsAssignable" showIf="assignableUsers == 1" widget="TagSelect"
+        requiredIf="assignableUsers == 1"/>
+      <field name="displayCustomerDescriptionInOpportunity" widget="boolean-switch"/>
+      <field name="isManageRecurrent" widget="boolean-switch" colSpan="3"/>
+      <field name="defaultRecurringDuration" showIf="isManageRecurrent" colSpan="3"/>
+      <field name="isManageCatalogs" widget="boolean-switch"
+        help="This configuration enables catalog management. It allows you to add sales catalogs in pdf format that can be consulted from the application."/>
+      <field name="agenciesManagement" widget="boolean-switch"/>
+      <field name="closedWinOpportunityStatus"/>
+      <field name="closedLostOpportunityStatus"/>
+      <field name="salesPropositionStatus"/>
+      <field name="convertedLeadStatus" required="true"/>
+      <field name="lostLeadStatus" required="true"/>
+    </panel>
+    <panel name="actionPanel">
+      <button name="generateCRMConfigurationsBtn" title="Generate CRM configurations"
+        colSpan="4"
+        onClick="save,com.axelor.apps.crm.web.AppCrmController:generateCrmConfigurations"/>
+      <panel-dashlet name="confCrmConfigPanel" colSpan="12"
+        action="admin.root.conf.crm.config"/>
+    </panel>
+    <panel-mail name="mailPanel">
+      <mail-messages limit="4"/>
+      <mail-followers/>
+    </panel-mail>
+  </form>
+
+  <action-view name="admin.root.conf.crm.config" title="CRM configurations"
+    model="com.axelor.apps.crm.db.CrmConfig">
+    <view type="grid" name="crm-config-grid"/>
+    <view type="form" name="crm-config-form"/>
+  </action-view>
+
+
+</object-views>

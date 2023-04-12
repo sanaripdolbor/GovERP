@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain-models xmlns="http://axelor.com/xml/ns/domain-models"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.4.xsd">
+
+  <module name="account" package="com.axelor.apps.account.db"/>
+
+  <entity name="AccountingBatch" lang="java">
+
+    <!-- HEADER -->
+    <string name="code" title="Code" namecolumn="true" unique="true"/>
+    <integer name="actionSelect" title="Action" required="true"
+      selection="iaccounting.batch.action.select"/>
+    <many-to-one name="company" ref="com.axelor.apps.base.db.Company" required="true"
+      title="Company"/>
+    <many-to-one name="bankDetails" ref="com.axelor.apps.base.db.BankDetails"
+      title="BBAN/IBAN to use"/>
+
+    <many-to-one name="currency" ref="com.axelor.apps.base.db.Currency" title="Currency"/>
+    <many-to-one name="paymentMode" ref="com.axelor.apps.account.db.PaymentMode"
+      title="Payment Mode"/>
+    <date name="dueDate"/>
+    <boolean name="includeOtherBankAccounts"/>
+
+    <!-- REIMBURSEMENT -->
+    <integer name="reimbursementTypeSelect" title="Reimbursement batch type"
+      selection="ireimbursement.batch.type.select"/>
+    <integer name="reimbursementExportTypeSelect" title="Treatment/Operation type"
+      selection="ireimbursement.batch.export.type.select"/>
+
+    <!-- DEBT RECOVERY -->
+    <integer name="debtRecoveryTypeSelect" title="Debt recovery batch type"
+      selection="idebt.recovery.batch.type.select"/>
+    <boolean name="isDebtRecoveryByTradingName" title="Manage debt recovery by trading name"
+      help="Enable debt recoveries being handled by trading name. If enabled with no trading name selected, all trading names will be considered selected."/>
+    <many-to-many name="tradingNameSet" title="Selected trading names"
+      ref="com.axelor.apps.base.db.TradingName"/>
+
+    <!-- CUSTOMER ACCOUNT -->
+    <boolean name="updateCustAccountOk" title="Customer balance"/>
+    <boolean name="updateDueCustAccountOk" title="Due balance"/>
+    <boolean name="updateDueDebtRecoveryCustAccountOk" title="Due balance recoverable"/>
+
+    <!-- MOVE LINE EXPORT -->
+    <integer name="moveLineExportTypeSelect" title="Export type"
+      selection="accounting.report.type.select.export"/>
+    <date name="startDate" title="Start date"/>
+    <date name="endDate" title="End date"/>
+
+    <!-- OTHERS INFORMATION -->
+    <string name="description" title="Description" large="true"/>
+    <one-to-many name="batchList" ref="com.axelor.apps.base.db.Batch"
+      mappedBy="accountingBatch" title="Batchs"/>
+
+    <!-- CREDIT TRANSFER -->
+    <integer name="creditTransferTypeSelect" title="Credit Transfer batch type"
+      selection="iaccount.account.batch.transfer.type.select"/>
+    <many-to-one name="period" ref="com.axelor.apps.base.db.Period" title="Period"/>
+    <integer name="customerReimbursementTypeSelect" title="Customer reimbursement type"
+      default="1" required="true"
+      selection="iaccount.account.batch.transfer.customer.reimbursement.type.select"/>
+
+    <!-- CLOSE/OPEN ANNUAL ACCOUNTS -->
+    <boolean name="openYear" title="Open the year accounts"/>
+    <boolean name="closeYear" title="Close the year accounts"/>
+    <many-to-one name="year" ref="com.axelor.apps.base.db.Year" title="Year"/>
+    <many-to-many name="closureAccountSet" ref="com.axelor.apps.account.db.Account"
+      title="Closure accounts"/>
+    <many-to-many name="openingAccountSet" ref="com.axelor.apps.account.db.Account"
+      title="Opening accounts"/>
+    <boolean name="generateResultMove" title="Generate result move"/>
+    <boolean name="includeSpecialAccounts" title="Include special accounts"/>
+
+    <string name="resultMoveDescription" title="Result move description"/>
+    <boolean name="simulateGeneratedMoves" title="Generate simulated moves"
+      help="Please make sure that the journal configured for annual closure and openning, does support simulated moves."/>
+    <boolean name="generateGeneralLedger" title="Generate general ledger"/>
+
+    <!-- <many-to-many name="journalSet" ref="Journal" title="Journals"/> -->
+    <boolean name="allocatePerPartner" title="Allocate per partner"/>
+    <string name="moveDescription" title="Move description"/>
+
+    <!-- REALIZED FIXED ASSET LINES -->
+    <boolean name="updateAllRealizedFixedAssetLines"
+      title="Update all realized fixed asset lines"/>
+
+    <!-- Bill of exchange -->
+    <integer name="billOfExchangeTypeSelect" title="Bill of exchange type"
+      selection="iaccount.account.batch.bill.of.exchange.type.select"/>
+
+    <many-to-one ref="com.axelor.apps.account.db.Journal" name="billOfExchangeJournal"
+      title="Bill of exchange journal"/>
+
+    <many-to-many ref="com.axelor.apps.base.db.Year" name="yearSet" title="Years"/>
+
+    <!--ACCOUNTING CUT OFF CONFIGURATION -->
+
+    <integer name="accountingCutOffTypeSelect" title="Type"
+      selection="accounting.batch.accounting.cut.off.type.select"/>
+    <date name="moveDate" title="Move date"/>
+    <date name="reverseMoveDate" title="Reverse move date"/>
+    <boolean name="recoveredTax" title="Recovered tax"/>
+    <boolean name="ati" title="A.T.I."/>
+    <string name="reverseMoveDescription" title="Reverse move description"/>
+    <boolean name="includeNotStockManagedProduct" title="Include not stock managed product"/>
+
+    <boolean name="automaticReverse" title="Automatic reverse"/>
+    <boolean name="automaticReconcile" title="Automatic reconcile"/>
+    <many-to-one name="miscOpeJournal" title="Misc. Operation Journal"
+      ref="com.axelor.apps.account.db.Journal"/>
+    <many-to-one name="researchJournal" title="Research Journal"
+      ref="com.axelor.apps.account.db.Journal"/>
+    <integer name="cutOffMoveStatusSelect" title="Cut off moves status"
+      selection="iaccount.move.status.select" default="1"/>
+    <boolean name="previewRecordsToProcess" title="Preview records to process"/>
+
+    <string name="prefixOrigin" title="Prefix for accounting voucher"/>
+
+    <extra-code><![CDATA[
+
+	   	// ACTION TYPE
+		public static final int ACTION_REIMBURSEMENT = 11;
+		public static final int ACTION_DEBT_RECOVERY = 14;
+		public static final int ACTION_DOUBTFUL_CUSTOMER = 16;
+		public static final int ACTION_ACCOUNT_CUSTOMER = 17;
+		public static final int ACTION_MOVE_LINE_EXPORT = 18;
+		public static final int ACTION_CREDIT_TRANSFER = 19;
+		public static final int ACTION_REALIZE_FIXED_ASSET_LINES = 20;
+		public static final int ACTION_CLOSE_OR_OPEN_THE_ANNUAL_ACCOUNTS = 21;
+		public static final int ACTION_LATE_PAYMENT_CUSTOMER_BLOCKING = 23;
+		public static final int ACTION_BILL_OF_EXCHANGE = 24;
+		public static final int ACTION_MOVES_CONSISTENCY_CONTROL = 25;
+		public static final int ACTION_ACCOUNTING_CUT_OFF = 26;
+
+		// REIMBURSEMENT TYPE
+		public static final int REIMBURSEMENT_TYPE_EXPORT = 1;
+		public static final int REIMBURSEMENT_TYPE_IMPORT = 2;
+
+		// REIMBURSEMENT EXPORT TYPE
+		public static final int REIMBURSEMENT_EXPORT_TYPE_GENERATE = 1;
+		public static final int REIMBURSEMNT_EXPORT_TYPE_EXPORT = 2;
+
+		// INTERBANK PAYMENT ORDER TYPE
+		public static final int INTERBANK_PAYMENT_ORDER_TYPE_IMPORT = 1;
+		public static final int INTERBANK_PAYMENT_ORDER_TYPE_REJECT_IMPORT = 2;
+
+		// DEBT RECOVERY TYPE
+		public static final int DEBT_RECOVERY_TYPE = 1;
+
+		// CREDIT TRANSFER TYPE
+		public static final int CREDIT_TRANSFER_EXPENSE_PAYMENT = 1;
+		public static final int CREDIT_TRANSFER_SUPPLIER_PAYMENT = 2;
+		public static final int CREDIT_TRANSFER_CUSTOMER_REIMBURSEMENT = 3;
+
+		// CUSTOMER REIMBURSEMENT TYPE
+		public static final int CUSTOMER_REIMBURSEMENT_CUSTOMER_REFUND = 1;
+		public static final int CUSTOMER_REIMBURSEMENT_PARTNER_CREDIT_BALANCE = 2;
+
+		// ACCOUNTING CUT OFF
+		public static final int ACCOUNTING_CUT_OFF_TYPE_PREPAID_EXPENSES = 3;
+		public static final int ACCOUNTING_CUT_OFF_TYPE_DEFERRED_INCOMES = 4;
+
+	]]></extra-code>
+
+    <track>
+      <field name="billOfExchangeTypeSelect" on="UPDATE"/>
+    </track>
+
+  </entity>
+
+</domain-models>

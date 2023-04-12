@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.4.xsd">
+
+  <grid name="maintenance-bill-of-material-grid" title="Bills of material"
+    model="com.axelor.apps.production.db.BillOfMaterial">
+    <field name="fullName"/>
+    <field name="company"/>
+    <field name="workshopStockLocation"/>
+    <field name="machineType"/>
+    <field name="qty" aggregate="sum" x-scale="2"/>
+    <field name="unit" form-view="unit-form" grid-view="unit-grid"/>
+    <field name="prodProcess" grid-view="prod-process-grid"
+      form-view="maintenance-prod-process-form"/>
+    <field name="statusSelect"/>
+  </grid>
+
+  <form name="maintenance-bill-of-material-form" title="Bill of materials"
+    model="com.axelor.apps.production.db.BillOfMaterial" width="large"
+    onLoad="action-bill-of-material-group-on-load"
+    onSave="save,action-bill-of-material-method-name,action-bill-of-material-method-validate-prod-process"
+    onNew="action-maintenance-bill-of-material-group-onnew" canNew="!_isPersonalized">
+    <menubar>
+      <menu name="bomReportsMenu" title="Reports">
+        <item name="printItem" title="Print" action="action-bill-of-material-method-print"/>
+      </menu>
+      <menu name="bomOptionsMenu" title="Options">
+        <item if="__config__.app.getApp('production')?.manageBillOfMaterialVersion"
+          name="generateNewVersionItem" title="Generate new version"
+          action="action-bill-of-material-check-other-version,action-bill-of-material-generate-new-version"/>
+      </menu>
+    </menubar>
+    <panel name="mainPanel">
+      <field name="statusSelect" showTitle="false" readonly="false" colSpan="8"
+        widget="NavSelect"/>
+      <field name="$defaultBOMOnProduct" showTitle="false" readonly="true" colSpan="4">
+        <viewer depends="$defaultBillOfMaterial"><![CDATA[
+
+                    <h4 class="text-right">
+                        <span class="label label-default" style="background-color: #009900; margin: 5px 0 !important; display: inline-table; line-height: initial;" ng-show="record.$defaultBillOfMaterial.id == record.id" x-translate>Default Bill of materials</span>
+                        <span class="label label-default" style="background-color: #B6473F; margin: 5px 0 !important; display: inline-table; line-height: initial;" ng-show="record.$defaultBillOfMaterial.id != record.id" x-translate>Alternative Bill of materials</span>
+                    </h4>
+            ]]></viewer>
+      </field>
+      <field name="fullName" showTitle="false" colSpan="12">
+        <viewer depends="name"><![CDATA[
+
+		<h3>
+			<span  style="margin: 5px 0 !important; display: inline-table; line-height: initial;">{{record.fullName}}</span>
+		</h3>
+
+    ]]></viewer>
+        <editor>
+          <field name="name" showTitle="true" css="label-bold bold large"/>
+        </editor>
+      </field>
+      <field name="company" widget="SuggestBox" canEdit="false" form-view="company-form"
+        grid-view="company-grid"/>
+      <field if="__config__.app.getApp('production')?.getManageWorkshop()"
+        name="workshopStockLocation" canEdit="false"
+        domain="self.company = :company and self.typeSelect = 1 and self.isWorkshop = true"/>
+      <field name="machineType" form-view="machine-type-form" grid-view="machine-type-grid"
+        required="true"/>
+      <field name="prodProcess" canNew="true"
+        onChange="action-bill-of-material-method-validate-prod-process"
+        domain="self.machineType = :machineType AND self.company = :company AND ((:workshopStockLocation IS NULL AND self.workshopStockLocation IS NULL) OR self.workshopStockLocation = :workshopStockLocation) AND self.typeSelect = 3"
+        form-view="maintenance-prod-process-form" grid-view="prod-process-grid"/>
+      <field name="qty" colSpan="3"/>
+      <field name="unit" colSpan="3" canEdit="false" required="true" form-view="unit-form"
+        grid-view="unit-grid"/>
+      <field name="product.defaultBillOfMaterial" hidden="true" colSpan="1"/>
+      <field name="typeSelect" hidden="true"/>
+    </panel>
+    <panel-tabs name="mainPanelTab">
+      <panel name="costPanel" title="Cost">
+        <button name="computeCostPriceBtn" title="Compute cost price"
+          onClick="save,action-bill-of-material-method-compute-cost-price"/>
+        <field name="costPrice" readonly="true"/>
+        <button name="updateProductCostPriceBtn" title="Update product cost price"
+          onClick="save,action-bill-of-material-method-update-product-cost-price"/>
+        <panel-related name="costSheetListsPanel" readonly="false" colSpan="12"
+          field="costSheetList" form-view="cost-sheet-bill-of-material-form"
+          grid-view="cost-sheet-bill-of-material-grid"/>
+      </panel>
+      <panel name="versionManagementPanel" title="Version management" hidden="true"
+        showIf="versionNumber > 1">
+        <field name="versionNumber" colSpan="3"/>
+        <field name="originalBillOfMaterial" readonly="true" colSpan="3"
+          form-view="bill-of-material-form" grid-view="bill-of-material-grid"/>
+      </panel>
+      <panel name="notePanel" title="Note">
+        <field name="note" showTitle="false" colSpan="12"/>
+      </panel>
+    </panel-tabs>
+    <panel-mail name="mailPanel">
+      <mail-messages limit="4"/>
+      <mail-followers/>
+    </panel-mail>
+  </form>
+
+  <action-group name="action-maintenance-bill-of-material-group-onnew">
+    <action name="action-bill-of-material-default-record"/>
+    <action name="action-bill-of-material-group-on-load"/>
+    <action name="action-maintenance-bill-of-material-attrs-set-default"/>
+  </action-group>
+
+  <action-attrs name="action-maintenance-bill-of-material-attrs-set-default">
+    <attribute name="value" for="typeSelect"
+      expr="eval: __repo__(ManufOrder).TYPE_MAINTENANCE"/>
+  </action-attrs>
+
+</object-views>

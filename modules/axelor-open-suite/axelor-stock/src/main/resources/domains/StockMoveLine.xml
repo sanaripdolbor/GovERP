@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain-models xmlns="http://axelor.com/xml/ns/domain-models"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.4.xsd">
+
+  <module name="stock" package="com.axelor.apps.stock.db"/>
+
+  <entity name="StockMoveLine" lang="java">
+
+    <many-to-one name="stockMove" readonly="true"
+      ref="com.axelor.apps.stock.db.StockMove" title="Stock move"/>
+    <many-to-one name="plannedStockMove" ref="com.axelor.apps.stock.db.StockMove"/>
+
+    <many-to-one name="product" ref="com.axelor.apps.base.db.Product" title="Product"/>
+    <boolean name="filterOnAvailableProducts" title="Filter on available products"
+      default="true" transient="true"/>
+    <decimal name="qty" min="0" title="Expected Qty" precision="20" scale="10"/>
+    <decimal name="realQty" min="0" title="Real Qty" precision="20" scale="10"/>
+    <decimal name="oldQty" hidden="true" precision="20" scale="10"/>
+    <decimal name="availableQty" title="Available qty" transient="true" precision="20"
+      scale="10"/>
+    <decimal name="availableQtyForProduct" title="Available qty for product"
+      transient="true" precision="20" scale="10"/>
+    <string name="availableStatus" title="Availability" transient="true"/>
+    <integer name="availableStatusSelect" title="Status" transient="true"
+      selection="stock.move.line.available.status.select"/>
+    <many-to-one name="unit" ref="com.axelor.apps.base.db.Unit" title="Unit"/>
+    <decimal name="netMass" title="Net mass" precision="20" scale="10"/>
+    <decimal name="totalNetMass" title="Total net mass"/>
+
+    <many-to-one name="trackingNumber" ref="com.axelor.apps.stock.db.TrackingNumber"
+      title="Tracking Nbr."/>
+
+    <integer name="conformitySelect" title="Conformity"
+      selection="stock.move.line.conformity.select"/>
+
+    <!-- TODO a deplacer dans Supplier management -->
+    <decimal name="shippedQty" title="Shipped qty" precision="20" scale="10"/>
+    <date name="shippedDate" title="Shipped date"/>
+
+    <many-to-one name="productModel" ref="com.axelor.apps.base.db.Product"
+      title="Product model"/>
+
+    <string name="productName" title="Title" required="true" namecolumn="true"/>
+    <string name="description" title="Description" large="true"/>
+
+    <decimal name="unitPriceUntaxed" precision="20" scale="10" title="Unit price"/>
+
+    <decimal name="unitPriceTaxed" precision="20" scale="10" title="Unit price"/>
+
+    <decimal name="companyUnitPriceUntaxed" precision="20" scale="10"
+      title="Company Unit price W.T."/>
+
+    <decimal name="wapPrice" precision="20" scale="10" readonly="true" nullable="true"
+      title="Price used for WAP"/>
+    <decimal name="companyPurchasePrice"
+      help="Purchase price in company currency, used for declaration of exchange." precision="20"
+      scale="10" title="Purchase price"/>
+
+    <string name="productTypeSelect" title="Product type"
+      selection="product.product.type.select"/>
+    <integer name="sequence" title="Seq."/>
+
+    <string name="name" title="Ref.">
+    	<![CDATA[
+    	if (stockMove != null && stockMove.getStockMoveSeq() != null){
+    		return stockMove.getStockMoveSeq()+ "-" +Integer.toString(sequence);
+    	}
+		else {
+			return Integer.toString(sequence);
+		 }
+	    ]]>
+    </string>
+
+    <many-to-one name="customsCodeNomenclature"
+      ref="com.axelor.apps.stock.db.CustomsCodeNomenclature"/>
+    <string name="customsCode"/>
+    <one-to-many name="logisticalFormLineList"
+      ref="com.axelor.apps.stock.db.LogisticalFormLine" mappedBy="stockMoveLine"
+      title="Logistical form lines"/>
+    <integer name="lineTypeSelect" title="Type" selection="line.type.select"/>
+
+    <enum name="regime" ref="com.axelor.apps.stock.db.Regime"/>
+    <enum name="natureOfTransaction" ref="com.axelor.apps.stock.db.NatureOfTransaction"/>
+    <many-to-one name="countryOfOrigin" ref="com.axelor.apps.base.db.Country"/>
+
+    <!-- Specific to mobile application -->
+    <boolean name="isRealQtyModifiedByUser"/>
+    <!-- Specific to mobile application -->
+
+    <extra-code><![CDATA[
+        // CONFORMITY SELECT
+        public static final int CONFORMITY_NONE = 1;
+        public static final int CONFORMITY_COMPLIANT = 2;
+        public static final int CONFORMITY_NON_COMPLIANT = 3;
+
+        public static final int TYPE_NORMAL = 0;
+		public static final int TYPE_TITLE = 1;
+
+		// AVAILABLE STATUS SELECT
+		public static final int STATUS_AVAILABLE = 1;
+		public static final int STATUS_AVAILABLE_FOR_PRODUCT = 2;
+		public static final int STATUS_MISSING = 3;
+    ]]></extra-code>
+
+    <track>
+      <field name="realQty"/>
+    </track>
+  </entity>
+
+  <enum name="Regime" numeric="true">
+    <item name="INTRACOMMUNITY_ACQUISITION_TAXABLE_IN_FRANCE" value="11"/>
+    <item name="OTHER_INTRODUCTIONS" value="19"/>
+
+    <item name="EXONERATED_SHIPMENT_AND_TRANSFER" value="21"/>
+    <item name="COMMERCIAL_REGULARIZATION_RESULTING_IN_VALUE_REDUCTION" value="25"/>
+    <item name="COMMERCIAL_REGULARIZATION_RESULTING_IN_VALUE_INCREASE" value="26"/>
+    <item name="OTHER_EXPEDITIONS" value="29"/>
+    <item name="SPECIAL_OPERATIONS" value="31"/>
+  </enum>
+
+  <enum name="NatureOfTransaction" numeric="true">
+    <item name="FIRM_PURCHASE_OR_SALE" value="11"/>
+    <item name="DELIVERY_FOR_TRIAL_SALE" value="12"/>
+    <item name="BARTER" value="13"/>
+    <item name="FINANCIAL_LEASING" value="14"/>
+    <item name="TRANSACTION_LEADING_TO_PROPERTY_TRANSFER" value="19"/>
+    <item name="RETURN_OF_GOODS" value="21"/>
+    <item name="REPLACEMENT_OF_RETURNED_GOODS" value="22"/>
+    <item name="REPLACEMENT_OF_NON_RETURNED_GOODS" value="23"/>
+    <item name="OTHER_RETURNS" value="29"/>
+    <item name="NON_TEMPORARY_IMPLYING_TRANSFER_OF_PROPERTY_WITHOUT_COMPENSATION" value="30"/>
+    <item name="OPERATIONS_FOR_CUSTOM_WORK_RETURN" value="41"/>
+    <item name="OPERATIONS_FOR_CUSTOM_WORK_NON_RETURN" value="42"/>
+    <item name="OPERATION_AFTER_CUSTOM_WORK_RETURN_TO_INITIAL_STATE" value="51"/>
+    <item name="OPERATION_AFTER_CUSTOM_WORK_RETURN_TO_OTHER_STATE" value="52"/>
+    <item name="TRANSFERS_UNDER_INWARD_PROCESSING" value="65"/>
+    <item name="DEFENSE_OR_INTERGOVERNMENTAL_PROGRAM" value="70"/>
+    <item name="MATERIALS_FOR_CONSTRUCTION_CONTRACT" value="80"/>
+    <item name="RENTAL_LOAN_LEASING_MORE_THAN_24_MONTHS" value="91"/>
+    <item name="OTHER_TRANSACTIONS" value="99"/>
+  </enum>
+
+</domain-models>

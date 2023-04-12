@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain-models xmlns="http://axelor.com/xml/ns/domain-models"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.4.xsd">
+
+  <module name="crm" package="com.axelor.apps.crm.db"/>
+
+  <entity name="Opportunity" lang="java">
+
+    <string name="name" title="Name" required="true"/>
+    <many-to-one name="partner" ref="com.axelor.apps.base.db.Partner"
+      title="Customer / Prospect"/>
+    <many-to-one name="contact" ref="com.axelor.apps.base.db.Partner" title="Contact"/>
+    <many-to-one name="currency" ref="com.axelor.apps.base.db.Currency" title="Currency"/>
+    <date name="expectedCloseDate" title="Expected close date"/>
+    <decimal name="amount" title="Amount"/>
+    <string name="opportunityType" title="Type of need"/>
+    <decimal name="bestCase" title="Best case"/>
+    <decimal name="worstCase" title="Worst case"/>
+    <many-to-one name="opportunityStatus" title="Sales stage"
+      ref="com.axelor.apps.crm.db.OpportunityStatus"/>
+    <decimal name="probability" title="Probability (%)"/>
+    <string name="description" large="true" title="Description"/>
+    <string name="customerDescription" large="true" title="Customer Description"/>
+    <many-to-one name="source" ref="com.axelor.apps.base.db.Source" title="Source"/>
+    <many-to-one name="company" ref="com.axelor.apps.base.db.Company" title="Company"/>
+    <integer name="orderByState"/>
+    <string name="memo" large="true"/>
+
+    <many-to-one name="user" column="user_id" ref="com.axelor.auth.db.User"
+      title="Assigned to"/>
+    <many-to-one name="team" ref="com.axelor.team.db.Team" title="Team"/>
+
+    <many-to-one name="lostReason" ref="LostReason" title="Lost reason"/>
+    <string name="lostReasonStr" title="Lost reason" large="true"/>
+    <many-to-one name="tradingName" ref="com.axelor.apps.base.db.TradingName"/>
+    <string name="opportunitySeq" title="Reference" readonly="true" unique="true"/>
+
+    <decimal name="recurrentAmount" title="Recurrent amount"/>
+    <integer name="expectedDurationOfRecurringRevenue"
+      title="Expected duration of recurring revenue (in months)"/>
+    <date name="recurringStartDate" title="Recurring start date"/>
+    <date name="recurringEndDate" title="Recurring end date"/>
+    <integer name="opportunityRating" title="Opportunity scoring"
+      selection="gold.rating.icon.select"/>
+
+    <track>
+      <field name="name"/>
+      <field name="opportunityStatus"/>
+      <message if="true" on="CREATE">Opportunity created</message>
+      <message
+        if="opportunityStatus.id == __config__.app.getApp('crm')?.closedWinOpportunityStatus?.id"
+        fields="opportunityStatus" tag="success">Opportunity won</message>
+      <message
+        if="opportunityStatus.id == __config__.app.getApp('crm')?.closedLostOpportunityStatus?.id"
+        fields="opportunityStatus" tag="warning">Opportunity lost</message>
+    </track>
+
+  </entity>
+
+</domain-models>

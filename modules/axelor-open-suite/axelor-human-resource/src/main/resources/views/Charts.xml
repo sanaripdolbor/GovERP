@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.4.xsd">
+
+  <chart name="chart.total.hours.per.day" title="" stacked="true">
+    <dataset type="jpql"><![CDATA[
+		SELECT
+			SUM(self.duration) AS _duration,
+			self.project.fullName AS _project,
+			self.date AS _day
+		FROM
+			TimesheetLine self
+		WHERE
+			self.timesheet.id= :id
+		GROUP BY
+			self.date,
+			self.project.fullName
+		ORDER BY
+			self.date
+		]]></dataset>
+    <category key="_day" type="text" title="Day"/>
+    <series key="_duration" type="bar" title="Total" groupBy="_project"/>
+  </chart>
+
+  <chart name="chart.leave.per.employee" title="Leave Per Employee" stacked="true">
+    <dataset type="jpql"><![CDATA[
+		SELECT
+			self.employee.name AS _employee,
+			self.name AS _leave_reason,
+			self.quantity AS _quantity
+		FROM
+			LeaveLine self
+		WHERE
+			self.employee.managerUser = :__user__
+		GROUP BY
+			self.employee.name,
+			self.name,
+			self.quantity
+		ORDER BY
+			self.employee.name,
+			self.name,
+			self.quantity
+		]]></dataset>
+    <category key="_employee" type="text" title="Employee"/>
+    <series key="_quantity" groupBy="_leave_reason" type="bar" title="Quantity"/>
+  </chart>
+
+  <chart onInit="action.hr.chart.set.period.last.month" title="Expense Per Employee"
+    name="chart.expense.per.employee">
+    <search-fields>
+      <field name="period" title="Period" type="reference" domain="self.year.typeSelect = 1"
+        target="com.axelor.apps.base.db.Period" x-required="true"/>
+    </search-fields>
+    <dataset type="jpql"><![CDATA[
+		SELECT
+			self.employee.name as _employee,
+			SUM(self.inTaxTotal) as _amount
+		FROM
+			Expense self
+		WHERE
+			self.employee.managerUser = :__user__
+		AND
+			self.period = :period
+		GROUP BY
+			self.employee.name
+		ORDER BY
+			self.employee.name
+		]]></dataset>
+    <category key="_employee" type="text" title="Employee"/>
+    <series key="_amount" aggregate="sum" type="bar" title="amount"/>
+  </chart>
+
+  <action-record model="com.axelor.apps.hr.db.Expense"
+    name="action.hr.chart.set.period.last.month">
+    <field name="period"
+      expr="eval: __repo__(Period).all().filter('fromDate &lt;= ?1 and toDate &gt;= ?1', __config__.date.minusMonths(1)).fetchOne()"/>
+  </action-record>
+
+</object-views>

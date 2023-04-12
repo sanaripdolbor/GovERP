@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.4.xsd">
+
+  <grid name="maintenance-prod-process-grid" title="Production process"
+    model="com.axelor.apps.production.db.ProdProcess">
+    <field name="name"/>
+    <field name="company"/>
+    <field name="workshopStockLocation"/>
+    <field name="code" x-bind="{{code|unaccent|uppercase}}"/>
+    <field name="machineType"/>
+    <field name="statusSelect"/>
+  </grid>
+
+  <form name="maintenance-prod-process-form" title="Production process"
+    model="com.axelor.apps.production.db.ProdProcess" width="large"
+    onLoad="action-prod-process-record-count-number-of-phases"
+    onSave="action-prod-process-method-validate-prod-process"
+    onNew="action-maintenance-prod-process-group-onnew">
+    <toolbar>
+      <button name="printBtn" title="Print" icon="fa-print"
+        onClick="save,action-production-process-print"/>
+      <button if="__config__.app.getApp('production')?.manageProdProcessVersion"
+        name="newVersionBtn" title="Generate new version"
+        onClick="action-production-process-check-other-version,action-production-process-generate-new-version"/>
+    </toolbar>
+    <panel name="mainPanel">
+      <field name="statusSelect" showTitle="false" readonly="false" colSpan="12"
+        widget="NavSelect"/>
+      <panel name="namePanel" colSpan="8" stacked="true">
+        <field name="fullName" showTitle="false" hidden="true" showIf="$readonly()"
+          css="label-bold bold large"/>
+        <field name="name" hidden="true" showIf="!$readonly()" css="label-bold bold large"/>
+      </panel>
+      <field name="$numberOfPhases" showTitle="false" readonly="true"
+        showIf="$numberOfPhases > 0" colSpan="4" type="integer">
+        <viewer depends="$numberOfPhases"><![CDATA[
+
+                    <h4 class="text-right">
+                        <span class="label label-default" style="background-color: #2185D0; margin: 5px 0 !important; display: inline-table; line-height: initial; border-top-right-radius: 0; border-bottom-right-radius: 0; padding-right: 0.4em;" x-translate>Number of phases</span><span class="label label-default" style="background-color: #23C6C8; margin: 5px 0 !important; display: inline-table; line-height: initial; border-top-left-radius: 0; border-bottom-left-radius: 0;">{{fmt('$numberOfPhases')}}</span>
+                    </h4>
+
+    ]]></viewer>
+      </field>
+      <field name="code" x-bind="{{code|unaccent|uppercase}}"/>
+      <field name="machineType" form-view="machine-type-form" grid-view="machine-type-grid"/>
+      <field name="company" widget="SuggestBox" canEdit="false" form-view="company-form"
+        grid-view="company-grid"/>
+      <field if="__config__.app.getApp('production')?.getManageWorkshop()"
+        name="workshopStockLocation" canEdit="false"
+        domain="self.usableOnProduction = True AND self.company = :company and self.typeSelect = 1 and self.isWorkshop = true"/>
+      <field name="typeSelect" hidden="true"/>
+      <field name="isEnabledForAllProducts" hidden="true"/>
+    </panel>
+    <panel-tabs>
+      <panel-related name="prodProcessLineListPanel" title="Phases" colSpan="12"
+        height="15" field="prodProcessLineList" form-view="prod-process-line-form"
+        grid-view="prod-process-line-grid"
+        onChange="action-prod-process-record-count-number-of-phases"/>
+      <panel-dashlet name="viewBillOfMaterialsPanel" title="Bills of material"
+        action="action-prod-process-view-bill-of-materials"/>
+    </panel-tabs>
+    <panel name="versionManagementPanel" title="Version management" hidden="true"
+      showIf="versionNumber > 1">
+      <field name="versionNumber" colSpan="3"/>
+      <field name="originalProdProcess" readonly="true" colSpan="3"
+        form-view="maintenance-prod-process-form" grid-view="prod-process-grid"/>
+    </panel>
+    <panel-mail name="mailPanel">
+      <mail-messages limit="4"/>
+      <mail-followers/>
+    </panel-mail>
+  </form>
+
+  <action-group name="action-maintenance-prod-process-group-onnew">
+    <action name="action-prod-process-group-on-new"/>
+    <action name="action-maintenance-prod-process-attrs-set-default"/>
+  </action-group>
+
+  <action-attrs name="action-maintenance-prod-process-attrs-set-default">
+    <attribute name="value" for="typeSelect"
+      expr="eval: __repo__(ManufOrder).TYPE_MAINTENANCE"/>
+    <attribute name="value" for="isEnabledForAllProducts" expr="eval: true"/>
+  </action-attrs>
+
+</object-views>

@@ -1,0 +1,16 @@
+apply plugin: "com.axelor.app-module"
+
+apply from: "../version.gradle"
+
+apply {
+	version = openSuiteVersion
+}
+
+axelor {
+	title "Axelor Production"
+	description "Axelor Production Module"
+}
+
+dependencies {
+	api project(":modules:axelor-supplychain")
+}
