@@ -1,5 +1,6 @@
 import com.axelor.gradle.tasks.GenerateAosChangelog
 import com.axelor.gradle.tasks.CheckEOLCharsInCsv
+import groovy.sql.Sql
 
 buildscript {
   ext.repos = {
@@ -21,6 +22,7 @@ buildscript {
   repositories repos
   dependencies {
     classpath "com.axelor:axelor-gradle:${openPlatformVersion}"
+    classpath "org.postgresql:postgresql:42.0.0"
   }
 }
 
