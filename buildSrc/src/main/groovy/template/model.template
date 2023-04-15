@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain-models xmlns="http://axelor.com/xml/ns/domain-models"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.4.xsd">
+
+    <module name="${module_name}" package="${module_path}" />
+
+    <% fields.each { field -> %>\
+        <% if ("string".equals(field.type_name) && field.is_auto_generated) { %>\
+            <sequence name="${name}.${field.name}" ${field.sequence_info} />\
+        <% } %>\
+    <% } %>\
+
+    <entity name="${name}" lang="java">
+        <% fields.each { field -> %>
+            <% if (field.type_name != null) { %>\
+                <% if ("string".equals(field.type_name) && field.is_search_field) { %>
+                    <string name="${field.name}" search="${field.search_fields}" namecolumn="true"\
+                    <% if (field.title != null) { %>\
+                        title="${field.title}"\
+                    <% } %>\
+                    >
+                    <![CDATA[
+                        String result = "";
+                        result = result \
+                        <% fields.each { f -> %>\
+                            <% if (field.search_fields.contains("${f.name}")) { %>\
+                                 + " " + ${f.name}\
+                            <% } %>\
+                        <% } %>\
+                        ;
+                        return result.trim();
+                    ]]>
+                    </string>\
+                <% } else { %>
+
+                    <% if (["json-many-to-one", "json-many-to-many", "json-one-to-many"].contains(field.type_name)) { %>\
+                        <${field.type_name.substring(5)}
+                    <% } else { %>\
+                        <${field.type_name}\
+                    <% } %>\
+                    <% if (["datetime", "date", "string", "integer", "long", "decimal"].contains(field.type_name)) { %>\
+                        <% if (field.selection != null) { %>\
+                             selection="${field.selection}"\
+                        <% } %>\
+                        <% if ("string".equals(field.type_name) && field.is_auto_generated) { %>\
+                            sequence="${name}.${field.name}"\
+                        <% } %>\
+                    <% } %>\
+                    <% if (["integer", "long", "decimal"].contains(field.type_name)) { %>\
+                        <% if (field.min_size != 0) { %>\
+                             min="${field.min_size}"\
+                        <% } %>\
+                        <% if (field.max_size != 0) { %>\
+                             max="${field.max_size}"\
+                        <% } %>\
+                    <% } %>\
+                    <% if (["many-to-one", "many-to-many", "one-to-one", "one-to-many"].contains(field.type_name)) { %>\
+                        ref="${field.target_model}"\
+                    <% } %>\
+                    <% if (["json-many-to-one", "json-many-to-many", "json-one-to-many"].contains(field.type_name)) { %>\
+                        ref="${field.module_path}.${field.target_model}"\
+                    <% } %>\
+                    <% if (field.help != null) { %>\
+                        help="${field.help}"\
+                    <% } %>\
+                    <% if (field.title != null) { %>\
+                        title="${field.title}"\
+                    <% } %>\
+                    <% if (field.default_value != null) { %>\
+                        default="${field.default_value}"\
+                    <% } %>\
+                    <% if (["decimal"].contains(field.type_name)) { %>\
+                        <% if (field.decimal_precision != null) { %>\
+                             precision="${field.decimal_precision}"\
+                        <% } %>\
+                        <% if (field.decimal_scale != null) { %>\
+                             scale="${field.decimal_scale}"\
+                        <% } %>\
+                    <% } %>\
+                    <% if (["enum"].contains(field.type_name)) { %>\
+                        <% if (field.enum_type != null) { %>\
+                             ref="${field.enum_type}"\
+                        <% } %>\
+                    <% } %>\
+                    name="${field.name}" />\
+                <% } %>\
+            <% } %>
+        <% } %>
+    </entity>
+</domain-models>

@@ -1,0 +1,43 @@
+<${view_type} name="custom-model-${name}-${view_type}" title="${title}" model="${module_path}.${name}">
+<% if (view_type == "form") { %>\
+    <panel>
+    <% fields.each { field -> %>\
+        <field name="${field.name}"\
+<% if (field.widget != null) { %>\
+ widget="${field.widget}"\
+<% } %>\
+<% if (field.domain != null) { %>\
+ domain="${field.domain}"\
+<% } %>\
+<% if (field.grid_view != null) { %>\
+ grid-view="${field.grid_view}"\
+<% } %>\
+<% if (field.form_view != null) { %>\
+ form-view="${field.form_view}"\
+<% } %>\
+<% if (field.is_readonly != null) { %>\
+ readonly="${field.is_readonly}"\
+<% } %>\
+<% if (field.is_required != null) { %>\
+ required="${field.is_required}"\
+<% } %>\
+<% if (field.is_hidden != null) { %>\
+ hidden="${field.is_hidden}"\
+<% } %>\
+ />
+    <% } %>\
+        <button name="cancelButton" title="Back" prompt="Are you sure you want to close?" onClick="studio-menu-${name.toLowerCase()},close" css="btn-danger" colSpan="2"/>
+        <button name="saveButton" title="Save and close" onClick="save,studio-menu-${name.toLowerCase()},close" css="btn-success" colSpan="3"/>
+    </panel>
+<% } else { %>
+    <% fields.each { field -> %>
+        <% if (field.visible_in_grid && !field.is_hidden) { %>\
+            <field name="${field.name}" />
+        <% } %>\
+    <% } %>
+    <% def count = fields.findAll { it.visible_in_grid }.size() %>
+    <% if (count <= 0) { %>\
+        <field name="id" />
+    <% } %>\
+<% } %>
+</${view_type}>

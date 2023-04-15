@@ -1,0 +1,4 @@
+<action-view name="${xml_id}" title="${name}" id="studio-menu-${name.toLowerCase()}" model="${module_path}.${name}" >
+	<view type="grid" name="custom-model-${name}-grid" />
+	<view type="form" name="custom-model-${name}-form" />
+</action-view>

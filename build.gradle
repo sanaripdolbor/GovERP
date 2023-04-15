@@ -108,3 +108,35 @@ task checkCsvEOL(type: CheckEOLCharsInCsv) {
 }
 
 build.finalizedBy archiveReports
+
+def props = new Properties()
+file("src/main/resources/application.properties").withInputStream { props.load(it) }
+def postgresSql = buildscript.configurations.classpath.find { it.toString().contains("org.postgresql") }
+URLClassLoader loader = GroovyObject.class.classLoader
+loader.addURL(file(postgresSql).toURL())
+def connection = Sql.newInstance(
+        props.getProperty("db.default.url"),
+        props.getProperty("db.default.user"),
+        props.getProperty("db.default.password"),
+        props.getProperty("db.default.driver")
+)
+tasks.register('generateXml', GenerateXml) {
+  group "Axelor build"
+  description "Generate xml."
+  sql = connection
+  modulePath = props.getProperty("xgtool.path")
+  moduleName = props.getProperty("xgtool.name")
+  generatePath = props.getProperty("xgtool.generate_path")
+}
+
+tasks.register('generateField', GenerateField) {
+  group "Axelor build"
+  description "Generate xml."
+  sql = connection
+  generatePath = props.getProperty("xgtool.generate_path")
+  modulePath = props.getProperty("xgtool.path")
+}
+
+war {
+  archiveName = "${project.name}.war"
+}
