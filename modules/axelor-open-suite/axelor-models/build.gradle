@@ -1,0 +1,21 @@
+apply plugin: "com.axelor.app-module"
+
+apply from: "../version.gradle"
+
+apply {
+	version = openSuiteVersion
+}
+
+
+axelor {
+	title "Axelor :: Mobels"
+	description "Axelor custom Models"
+}
+
+dependencies {
+	for (def i : gradle.ext.appModules) {
+		if (i.name == project.name) continue
+		api project(":modules:${i.name}")
+	}
+}
+

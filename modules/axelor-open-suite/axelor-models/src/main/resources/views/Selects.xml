@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.4.xsd">
+
+  <selection name="json.field.type.for-analytic">
+    <option value="string">String</option>
+    <option value="integer">Integer</option>
+    <option value="long">Long</option>
+    <option value="decimal">Decimal</option>
+    <option value="boolean">Boolean</option>
+    <option value="datetime">DateTime</option>
+    <option value="date">Date</option>
+    <option value="time">Time</option>
+    <option value="enum">Enum</option>
+    <option value="binary">Binary</option>
+    <option value="many-to-one">ManyToOne</option>
+    <option value="many-to-many">ManyToMany</option>
+    <option value="one-to-many">OneToMany</option>
+    <option value="json-many-to-one">Custom-ManyToOne</option>
+    <option value="json-many-to-many">Custom-ManyToMany</option>
+    <option value="json-one-to-many">Custom-OneToMany</option>
+  </selection>
+
+</object-views>
