@@ -1,4 +1,4 @@
-package com.axelor.goverp.web;
+package com.axelor.web;
 
 import com.axelor.inject.Beans;
 import com.axelor.meta.db.MetaJsonField;
@@ -14,7 +14,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/meta")
 @Singleton
-public class GoverpApi {
+public class ScriptReloadEr {
 
   @GET
   @Path("/check/models")
