@@ -34,7 +34,7 @@ public class MappingService {
 
   public void migrateDataFromMetaJsonRecord(@Observes StartupEvent event) {
     logger.info("starting migrate".toUpperCase());
-    path = AppSettings.get().getPath("xgtool.path");
+    path = AppSettings.get().get("xgtool.path");
     if (path == null) {
       logger.info("xgtool not configured".toUpperCase());
       return;
