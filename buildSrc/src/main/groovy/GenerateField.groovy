@@ -1,0 +1,141 @@
+import groovy.sql.GroovyRowResult
+import groovy.sql.Sql
+import groovy.text.GStringTemplateEngine
+import groovy.xml.XmlUtil
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.TaskAction
+
+
+class GenerateField extends DefaultTask {
+
+    Sql sql
+    def engine = new GStringTemplateEngine()
+    def xmlParser = new XmlParser()
+    def modelTemplate = engine.createTemplate(new File('buildSrc/src/main/groovy/template/model.template'))
+    String generatePath
+    String modulePath
+
+    @TaskAction
+    void run() {
+        if (generatePath == null) {
+            return
+        }
+
+        def modelsUpdated = updatingModels()
+        for (def model : modelsUpdated) {
+
+            def modelName = model.get("model_name") as String
+            def entityMap = findModule(modelName)
+            def fields = getNewFields(modelName)
+            if (fields.size() < 0) return
+            fields.each {
+                def jsonModelId = it.get("target_json_model")
+                if (jsonModelId == null) return
+                def row = sql.firstRow("select * from meta_json_model where id = ?;", jsonModelId as Long)
+                it.put("target_model", row.get("name"))
+                def module = getModule(row.get("module") as String)
+                if (module != null) {
+                    it.put("module_path", module.get("package_name"))
+                } else {
+                    it.put("module_path", modulePath)
+                }
+            }
+            def map = [fields: fields]
+            map.putAll(entityMap)
+            def domain = new File(generatePath + "/domains/" + entityMap.get("name").toString() + ".xml")
+            if (domain.exists() && domain.length() > 0) {
+                def oldXml = xmlParser.parse(domain)
+                def oldEntity = oldXml.get("entity") as NodeList
+                def oldFields = oldEntity.collect { it.value() }.get(0)
+                def oldSequences = oldXml.get("sequence") as NodeList
+
+                def newXml = xmlParser.parseText(modelTemplate.make(map).toString())
+                def newEntity = newXml.get("entity") as NodeList
+                def newFields = newEntity.collect { it.value() }.get(0)
+                def newSequences = newXml.get("sequence") as NodeList
+
+                for (Node node : oldSequences) {
+                    oldXml.remove(node)
+                }
+                for (Node node : oldEntity) {
+                    oldXml.remove(node)
+                }
+
+                Node entity = new Node(null, "entity", [name: entityMap.get("name")]);
+
+                for (Node node1 : newSequences) {
+                    if (checkLists(node1, oldSequences)) continue
+                    oldXml.append(node1)
+                }
+                oldSequences.each { oldXml.append(it as Node) }
+
+                for (Node node1 : newFields) {
+                    if (checkLists(node1, oldFields)) continue
+                    entity.append(node1)
+                }
+                oldFields.each { entity.append(it as Node) }
+
+                oldXml.append(entity)
+                domain.withWriter {
+                    XmlUtil.serialize(oldXml, it)
+                }
+            } else {
+                def value = modelTemplate.make(map)
+                domain.write(value.toString())
+            }
+        }
+
+        //close
+        this.sql.close()
+    }
+
+    def getModule(String name) {
+        if (name == null) {
+            return null
+        }
+        return sql.firstRow("select mm.package_name as package_name,lower(split_part(m.name, '-', 2)) || lower(split_part(m.name, '-', 3)) as module_name from meta_model mm inner join meta_module m on lower(split_part(m.name, '-', 2)) || lower(split_part(m.name, '-', 3)) like lower(split_part(mm.table_name, '_', 1)) where m.name = ?", name)
+    }
+
+    List updatingModels() {
+        return this.sql.rows("select model_name from meta_json_field where model_name not like '%MetaJsonRecord' and lower(type_name) not in ('panel', 'spacer', 'button', 'label', 'separator') group by model_name")
+    }
+
+    List getNewFields(String model) {
+        return this.sql.rows("select * from meta_json_field where lower(type_name) not in ('panel', 'spacer', 'button', 'label', 'separator') and model_name = '$model'")
+    }
+
+    GroovyRowResult findModule(String modelFullName) {
+        return this.sql.firstRow("""select id, lower(split_part(table_name, '_', 1)) as module_name, package_name as module_path, name, table_name from meta_model where full_name = '$modelFullName'""")
+    }
+
+    List<Node> generateSequences(List<Map<String, Object>> mapList) {
+        String modelName = ""
+        List<Node> nodes = new ArrayList<>();
+        mapList.forEach { e ->
+            String fullModel = e.get("model_name") as String
+            modelName = fullModel.substring(fullModel.lastIndexOf(".") + 1)
+            boolean isAutoGenerated = e.get('is_auto_generated') as boolean
+            if (isAutoGenerated) {
+                Node sequence = new Node(null, "sequence")
+                def attributes = sequence.attributes()
+                attributes.put("name", modelName + "." + e.get("name"))
+                attributes.put("prefix", e.get("prefix") as String)
+                attributes.put("suffix", e.get("suffix") as String)
+                attributes.put("initial", e.get("initial_value") as Integer)
+                attributes.put("increment", e.get("sequence_increment") as Integer)
+                attributes.put("padding", e.get("padding") as Integer)
+                nodes.add(sequence)
+            }
+        }
+        return nodes
+    }
+
+    private boolean checkLists(def node, def nodeList) {
+        for (Node node1 : nodeList) {
+            if (node.attribute("name") == node1.attribute("name")) {
+                return true
+            }
+        }
+        return false
+    }
+}

@@ -1,0 +1,10 @@
+URL_TOMCAT="http://localhost:8080"
+PATH_TOMCAT=/opt/tomcat/webapps
+WAR_NAME=axelor-template.war
+URL_BASE="http://localhost:8080/axelor-template"
+URL_LOGIN="login.jsp"
+TEMP_FILE=temp.txt
+CONTENT_TYPE="Content-Type:application/json"
+USERNAME=admin
+PASSWORD=admin
+SCRIPT_NAME="AXELOR-TEMPLATE"
