@@ -6,7 +6,7 @@ echo $pwd
 source ./config.txt
 echo $SCRIPT_NAME
 
-response=$(curl --write-out '%{http_code}' --silent --output /dev/null "${URL_BASE}/${URL_LOGIN}")
+response=$(curl --write-out '%{http_code}' --silent --output /dev/null "${URL_TOMCAT}")
 if [ $response -ne 200 ]
 then
 	echo "tomcat disabled"
@@ -20,43 +20,36 @@ curl -X POST -c $TEMP_FILE -H $CONTENT_TYPE -d "{\"username\":\"${USERNAME}\",\"
 
 NEW_MODELS=$(curl -X GET -b $TEMP_FILE "${URL_BASE}/ws/meta/check/models")
 NEW_FIELDS=$(curl -X GET -b $TEMP_FILE "${URL_BASE}/ws/meta/check/fields")
-
-if [ $NEW_MODELS -eq 0 ] && [ $NEW_FIELDS -eq 0 ]
+if [[ "$NEW_MODELS$NEW_FIELDS" =~ [0-9] ]]
 then
 	echo "not found new models and fields"
 	exit
 fi
-
+echo "$NEW_MODELS models -- $NEW_FIELDS fields"
 cd ..
 # clean
-./gradlew clean --no-daemon
+./gradlew clean -w --no-daemon
 echo "clean"
 if [ $NEW_MODELS -gt 0 ]
 then
-	./gradlew generateXml --no-daemon
+	./gradlew generateXml -w --no-daemon
 	echo "created xml"
 fi
 
 if [ $NEW_FIELDS -gt 0 ]
 then
-	./gradlew generateField --no-daemon
+	./gradlew generateField -w --no-daemon
 	echo "created field"
 fi
 # build
 echo "build"
-./gradlew build --no-daemon
+./gradlew build -w --no-daemon
 if [ $? -ne 0 ]
 then
 	echo "ERROR: application not build"
 	exit
 fi
 
-# restart
-systemctl stop tomcat
-echo "tomcat stopping"
-
 rm $PATH_TOMCAT/$WAR_NAME
 cp build/libs/$WAR_NAME $PATH_TOMCAT
-systemctl start tomcat
-echo "tomcat starting"
 exit
