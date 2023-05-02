@@ -16,14 +16,11 @@ This script doing (linux Ubuntu 22.02)
 4. If newModels > 0 `./gradlew generateXml`
 5. If newFields > 0 `./gradlew generateField`
 6. Building project `./gradlew build`
-7. Disable **tomcat**
-8. Delete _old war_ file
-9. Copy _new war_ in **tomcat/webapps**
-10. Enable **tomcat**
+7. Delete _old war_ file
+8. Copy _new war_ in **tomcat/webapps**
 
 And for the script to work properly, need
 + curl
-+ tomcat.service (for `systemctl`)
 + check executable permissions `gradlew.sh` script
 
 ### Configuration
@@ -31,15 +28,15 @@ And for the script to work properly, need
 The configuration file is called `./config.txt`
 There you need to configure paths to folders, files and url
 
-|name|desc|
-|---|---|
-|URL_TOMCAT|tomcat url for `curl` request|
-|PATH_TOMCAT|**tomcat/webapps** directory path in linux|
-|WAR_NAME|static name war file (for find in **tomcat**)|
-|URL_BASE|full url path to **web-app**|
-|URL_LOGIN|url path to **axelor** security (for authorization)|
-|TEMP_FILE|file name (for saving **axelor** cookie)|
-|CONTENT_TYPE|set **curl** request content-type|
-|USERNAME|**axelor** admin login|
-|PASSWORD|**axelor** admin password|
-|SCRIPT_NAME|title for script, need for logs|
+| name         | desc                                                |
+|--------------|-----------------------------------------------------|
+| URL_TOMCAT   | tomcat url for `curl` request                       |
+| PATH_TOMCAT  | **tomcat/webapps** directory path in linux          |
+| WAR_NAME     | static name war file (for find in **tomcat**)       |
+| URL_BASE     | full url path to **web-app**                        |
+| URL_LOGIN    | url path to **axelor** security (for authorization) |
+| TEMP_FILE    | file name (for saving **axelor** cookie)            |
+| CONTENT_TYPE | set **curl** request content-type                   |
+| USERNAME     | **axelor** admin login                              |
+| PASSWORD     | **axelor** admin password                           |
+| SCRIPT_NAME  | title for script, need for logs                     |
