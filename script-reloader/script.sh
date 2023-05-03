@@ -20,7 +20,7 @@ curl -X POST -c $TEMP_FILE -H $CONTENT_TYPE -d "{\"username\":\"${USERNAME}\",\"
 
 NEW_MODELS=$(curl -X GET -b $TEMP_FILE "${URL_BASE}/ws/meta/check/models")
 NEW_FIELDS=$(curl -X GET -b $TEMP_FILE "${URL_BASE}/ws/meta/check/fields")
-if [[ "$NEW_MODELS$NEW_FIELDS" =~ [0-9] ]]
+if ! [[ "$NEW_MODELS$NEW_FIELDS" =~ [0-9] ]]
 then
 	echo "not found new models and fields"
 	exit
