@@ -1,8 +1,8 @@
 printf "%0.s=" {1..100};printf "\n"
 echo "Running cron-job foo at $(date)"
-pwd=$(pwd)
-cd $pwd
-echo $pwd
+SCRIPT_LOCATION=$(dirname "${0}")
+cd "${SCRIPT_LOCATION}" || { echo "Failure"; exit 1; };
+echo "${SCRIPT_LOCATION}"
 source ./config.txt
 echo $SCRIPT_NAME
 
