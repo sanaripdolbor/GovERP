@@ -91,3 +91,7 @@ task checkCsvEOL(type: CheckEOLCharsInCsv) {
 }
 
 build.finalizedBy archiveReports
+
+war {
+  archiveName = "${project.name}.war"
+}
